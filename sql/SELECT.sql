@@ -395,13 +395,146 @@ ON users(phone);
 -- 10. Check final data
 -- =========================================================
 
-SELECT
-    id,
-    full_name,
-    email,
-    phone,
-    country_iso,
-    role
-FROM users
-ORDER BY id;
-select * from payments;
+SELECT id, full_name, email, role
+FROM users;
+-- ============================================
+-- BETPAY SOCIAL / COMMUNITY FEATURE
+-- ============================================
+
+-- 1. Groups
+CREATE TABLE IF NOT EXISTS groups (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    description TEXT,
+    cover_image TEXT,
+    created_by INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_group_creator
+        FOREIGN KEY (created_by)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+
+-- 2. Group Members
+CREATE TABLE IF NOT EXISTS group_members (
+    id SERIAL PRIMARY KEY,
+    group_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_group_member_group
+        FOREIGN KEY (group_id)
+        REFERENCES groups(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_group_member_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT unique_group_member
+        UNIQUE (group_id, user_id)
+);
+
+
+-- 3. Posts
+CREATE TABLE IF NOT EXISTS posts (
+    id SERIAL PRIMARY KEY,
+    group_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    image_url TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_post_group
+        FOREIGN KEY (group_id)
+        REFERENCES groups(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_post_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+
+-- 4. Comments
+CREATE TABLE IF NOT EXISTS comments (
+    id SERIAL PRIMARY KEY,
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_comment_post
+        FOREIGN KEY (post_id)
+        REFERENCES posts(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_comment_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+
+-- 5. Likes
+CREATE TABLE IF NOT EXISTS likes (
+    id SERIAL PRIMARY KEY,
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_like_post
+        FOREIGN KEY (post_id)
+        REFERENCES posts(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_like_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT unique_post_like
+        UNIQUE (post_id, user_id)
+);
+
+
+-- ============================================
+-- INDEXES
+-- ============================================
+
+CREATE INDEX IF NOT EXISTS idx_group_members_group
+    ON group_members(group_id);
+
+CREATE INDEX IF NOT EXISTS idx_group_members_user
+    ON group_members(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_posts_group
+    ON posts(group_id);
+
+CREATE INDEX IF NOT EXISTS idx_posts_user
+    ON posts(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_comments_post
+    ON comments(post_id);
+
+CREATE INDEX IF NOT EXISTS idx_likes_post
+    ON likes(post_id);
+
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public';
+
+
+SELECT * FROM groups;
+
+SELECT id, full_name, email FROM users LIMIT 5;
+SELECT * FROM group_members;
+SELECT * FROM posts;
+SELECT * FROM likes;
+SELECT * FROM comments;
+SELECT * FROM comments;
+SELECT * FROM likes;

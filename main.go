@@ -110,20 +110,117 @@ func main() {
 	paymentHandler := handlers.NewPaymentHandler(db)
 
 	meHandler := handlers.NewMeHandler(db)
+	socialHandler := handlers.NewSocialHandler(db)
+	postHandler := handlers.NewPostHandler(db)
 
 	// =================================
 	// ROUTES
 	// =================================
 
 	// ---------------------------------
-	// Health check
+// Social / Community
+// ---------------------------------
+
+	http.HandleFunc(
+		"POST /api/groups",
+		socialHandler.CreateGroup,
+	)
+
+	http.HandleFunc(
+		"GET /api/groups",
+		socialHandler.GetGroups,
+	)
+
+	http.HandleFunc(
+		"POST /api/groups/{groupId}/join",
+		socialHandler.JoinGroup,
+	)
+
 	// ---------------------------------
+// Social Posts
+// ---------------------------------
+
+	http.HandleFunc(
+		"POST /api/groups/{groupId}/posts",
+		postHandler.CreatePost,
+	)
+	http.HandleFunc(
+	"GET /api/groups/{groupId}/posts",
+	postHandler.GetGroupPosts,
+	)
+	http.HandleFunc(
+		"POST /api/posts/{postId}/like",
+		postHandler.LikePost,
+	)
+	http.HandleFunc(
+	"POST /api/posts/{postId}/comments",
+	postHandler.CreateComment,
+   )
+   http.HandleFunc(
+	"GET /api/posts/{postId}/comments",
+	postHandler.GetPostComments,
+   )
+   http.HandleFunc(
+	"DELETE /api/posts/{postId}/like",
+	postHandler.UnlikePost,
+   )
+   http.HandleFunc(
+	"GET /api/posts/{postId}/likes",
+	postHandler.GetLikeCount,
+   )
+   http.HandleFunc(
+	"GET /api/posts/{postId}/like-status",
+	postHandler.CheckLike,
+	)
+	http.HandleFunc(
+		"DELETE /api/groups/{groupId}/leave",
+		socialHandler.LeaveGroup,
+	)
+	http.HandleFunc(
+	"GET /api/groups/{groupId}/membership",
+	socialHandler.CheckMembership,
+	)
+	http.HandleFunc(
+		"GET /api/groups/{groupId}/members/count",
+		socialHandler.GetMemberCount,
+	)
+	http.HandleFunc(
+	"GET /api/groups/{groupId}/members",
+	socialHandler.GetMembers,
+	)
+	http.HandleFunc(
+		"DELETE /api/comments/{commentId}",
+		postHandler.DeleteComment,
+	)
+	http.HandleFunc(
+		"DELETE /api/posts/{postId}",
+		postHandler.DeletePost,
+	)
+	http.HandleFunc(
+		"PUT /api/posts/{postId}",
+		postHandler.UpdatePost,
+	)
+	http.HandleFunc(
+		"PUT /api/comments/{commentId}",
+		postHandler.UpdateComment,
+	)
+	http.HandleFunc(
+	"GET /api/users/{userId}/groups",
+	socialHandler.GetUserGroups,
+    )
 
 	http.HandleFunc(
 		"/api/health",
 		healthHandler,
 	)
-
+	http.HandleFunc(
+	"GET /api/users/{userId}/posts",
+	postHandler.GetUserPosts,
+	)
+	http.HandleFunc(
+		"GET /api/users/{userId}/comments",
+		postHandler.GetUserComments,
+	)
 	// ---------------------------------
 	// User registration
 	// ---------------------------------
